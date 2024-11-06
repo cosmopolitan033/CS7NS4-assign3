@@ -1,37 +1,46 @@
 package org.tcd.cs7ns4.config;
 
-import org.springframework.boot.jdbc.DataSourceBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+
 @Configuration
 public class DataSourceConfig {
 
-    @Bean
+    @Autowired
+    private DataSourceProperties dataSourceProperties;
+
     @Primary
-    public DataSource masterDataSource() {
-        return DataSourceBuilder.create().type(DataSource.class).build();
-    }
+    @Bean(name = "dataSource")
+    public DynamicRoutingDataSource dataSource() {
+        DynamicRoutingDataSource routingDataSource = new DynamicRoutingDataSource();
 
-    @Bean
-    public DataSource replicaDataSource() {
-        return DataSourceBuilder.create().type(DataSource.class).build();
-    }
+        DataSource masterDataSource = DataSourceBuilder.create()
+                .url(dataSourceProperties.getMaster().getUrl())
+                .username(dataSourceProperties.getMaster().getUsername())
+                .password(dataSourceProperties.getMaster().getPassword())
+                .driverClassName(dataSourceProperties.getMaster().getDriverClassName())
+                .build();
 
-    @Bean
-    @Primary
-    public DataSource routingDataSource() {
-        DynamicDataSource routingDataSource = new DynamicDataSource();
-        Map<Object, Object> dataSourceMap = new HashMap<>();
-        dataSourceMap.put("master", masterDataSource());
-        dataSourceMap.put("replica", replicaDataSource());
+        DataSource replicaDataSource = DataSourceBuilder.create()
+                .url(dataSourceProperties.getReplica().getUrl())
+                .username(dataSourceProperties.getReplica().getUsername())
+                .password(dataSourceProperties.getReplica().getPassword())
+                .driverClassName(dataSourceProperties.getReplica().getDriverClassName())
+                .build();
 
-        routingDataSource.setDefaultTargetDataSource(masterDataSource());
-        routingDataSource.setTargetDataSources(dataSourceMap);
+        Map<Object, Object> targetDataSources = new HashMap<>();
+        targetDataSources.put("master", masterDataSource);
+        targetDataSources.put("replica", replicaDataSource);
+
+        routingDataSource.setTargetDataSources(targetDataSources);
+        routingDataSource.setDefaultTargetDataSource(masterDataSource); // 默认数据源为主库
 
         return routingDataSource;
     }
