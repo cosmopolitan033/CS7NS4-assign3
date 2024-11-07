@@ -16,6 +16,11 @@ public class Pollutant {
     @JoinColumn(name = "air_quality_id")
     private AirQuality airQuality;
 
+    public Pollutant(String pm25, double v) {
+        this.name = pm25;
+        this.value = v;
+    }
+
     // Getters and Setters
 
     public Long getId() {

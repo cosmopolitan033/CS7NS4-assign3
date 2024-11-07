@@ -68,4 +68,16 @@ public class City {
     public void setAirQualityRecords(List<AirQuality> airQualityRecords) {
         this.airQualityRecords = airQualityRecords;
     }
+
+    @Transient
+    public Double[] getGeo() {
+        return new Double[] {latitude, longitude};
+    }
+
+    public void setGeo(Double[] geo) {
+        if (geo != null && geo.length == 2) {
+            this.latitude = geo[0];
+            this.longitude = geo[1];
+        }
+    }
 }

@@ -3,6 +3,7 @@ package org.tcd.cs7ns4.entity;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,10 +24,10 @@ public class AirQuality {
     private Timestamp dataTimestamp;
 
     @OneToMany(mappedBy = "airQuality", cascade = CascadeType.ALL)
-    private List<Pollutant> pollutants;
+    private List<Pollutant> pollutants = new ArrayList<>();
 
     @OneToMany(mappedBy = "airQuality", cascade = CascadeType.ALL)
-    private List<Forecast> forecasts;
+    private List<Forecast> forecasts = new ArrayList<>();
 
     // Getters and Setters
 

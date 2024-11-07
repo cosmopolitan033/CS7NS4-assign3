@@ -1,47 +1,81 @@
 package org.tcd.cs7ns4.config;
 
-import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import javax.sql.DataSource;
 
 @Configuration
+@EnableJpaRepositories(
+        basePackages = "org.tcd.cs7ns4.repository",
+        entityManagerFactoryRef = "masterEntityManagerFactory",
+        transactionManagerRef = "masterTransactionManager"
+)
 public class DataSourceConfig {
 
-    @Autowired
-    private DataSourceProperties dataSourceProperties;
-
+    // 主数据库的数据源
+    @Bean(name = "masterDataSource")
     @Primary
-    @Bean(name = "dataSource")
-    public DynamicRoutingDataSource dataSource() {
-        DynamicRoutingDataSource routingDataSource = new DynamicRoutingDataSource();
+    @ConfigurationProperties(prefix = "spring.datasource.master")
+    public DataSource masterDataSource() {
+        // 创建主数据源的配置
+        return new HikariDataSource();
+    }
 
-        DataSource masterDataSource = DataSourceBuilder.create()
-                .url(dataSourceProperties.getMaster().getUrl())
-                .username(dataSourceProperties.getMaster().getUsername())
-                .password(dataSourceProperties.getMaster().getPassword())
-                .driverClassName(dataSourceProperties.getMaster().getDriverClassName())
+    // 从数据库的数据源
+    @Bean(name = "slaveDataSource")
+    @ConfigurationProperties(prefix = "spring.datasource.slave")
+    public DataSource slaveDataSource() {
+        // 创建从数据源的配置
+        return new HikariDataSource();
+    }
+
+    // 主数据源的EntityManagerFactory
+    @Primary
+    @Bean(name = "masterEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean masterEntityManagerFactory(
+            EntityManagerFactoryBuilder builder,
+            @Qualifier("masterDataSource") DataSource masterDataSource) {
+        return builder
+                .dataSource(masterDataSource)
+                .packages("org.tcd.cs7ns4.entity")
+                .persistenceUnit("master")
                 .build();
+    }
 
-        DataSource replicaDataSource = DataSourceBuilder.create()
-                .url(dataSourceProperties.getReplica().getUrl())
-                .username(dataSourceProperties.getReplica().getUsername())
-                .password(dataSourceProperties.getReplica().getPassword())
-                .driverClassName(dataSourceProperties.getReplica().getDriverClassName())
+    // 从数据源的EntityManagerFactory
+    @Bean(name = "slaveEntityManagerFactory")
+    public LocalContainerEntityManagerFactoryBean slaveEntityManagerFactory(
+            EntityManagerFactoryBuilder builder,
+            @Qualifier("slaveDataSource") DataSource slaveDataSource) {
+        return builder
+                .dataSource(slaveDataSource)
+                .packages("org.tcd.cs7ns4.entity")
+                .persistenceUnit("slave")
                 .build();
+    }
 
-        Map<Object, Object> targetDataSources = new HashMap<>();
-        targetDataSources.put("master", masterDataSource);
-        targetDataSources.put("replica", replicaDataSource);
+    // 主数据库的事务管理器
+    @Primary
+    @Bean(name = "masterTransactionManager")
+    public JpaTransactionManager masterTransactionManager(
+            @Qualifier("masterEntityManagerFactory") LocalContainerEntityManagerFactoryBean masterEntityManagerFactory) {
+        return new JpaTransactionManager(masterEntityManagerFactory.getObject());
+    }
 
-        routingDataSource.setTargetDataSources(targetDataSources);
-        routingDataSource.setDefaultTargetDataSource(masterDataSource); // 默认数据源为主库
-
-        return routingDataSource;
+    // 从数据库的事务管理器
+    @Bean(name = "slaveTransactionManager")
+    public JpaTransactionManager slaveTransactionManager(
+            @Qualifier("slaveEntityManagerFactory") LocalContainerEntityManagerFactoryBean slaveEntityManagerFactory) {
+        return new JpaTransactionManager(slaveEntityManagerFactory.getObject());
     }
 }
