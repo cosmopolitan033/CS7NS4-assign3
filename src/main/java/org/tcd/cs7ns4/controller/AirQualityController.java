@@ -1,19 +1,21 @@
 package org.tcd.cs7ns4.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.tcd.cs7ns4.entity.AirQuality;
-import org.tcd.cs7ns4.service.AirQualityService;
+import org.springframework.web.bind.annotation.*;
+import org.tcd.cs7ns4.entity.AirQualityData;
+import org.tcd.cs7ns4.repository.AirQualityRepository;
+
+import java.util.List;
 
 @RestController
+@RequestMapping("/api/airquality")
 public class AirQualityController {
 
     @Autowired
-    private AirQualityService airQualityService;
+    private AirQualityRepository repository;
 
-    @GetMapping("/air-quality")
-    public AirQuality getAirQuality() {
-        return airQualityService.fetchAndSaveAirQualityData();
+    @GetMapping("/{city}")
+    public List<AirQualityData> getDataByCity(@PathVariable String city) {
+        return repository.findByCity(city);
     }
 }
