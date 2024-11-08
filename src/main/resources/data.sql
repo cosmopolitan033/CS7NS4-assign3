@@ -1,4 +1,3 @@
--- 创建主表 AirQualityData
 CREATE TABLE AirQualityData (
                                 id SERIAL PRIMARY KEY,
                                 city VARCHAR(255),
@@ -10,7 +9,6 @@ CREATE TABLE AirQualityData (
                                 timestamp TIMESTAMP
 );
 
--- 创建 Attribution 表
 CREATE TABLE Attribution (
                              id SERIAL PRIMARY KEY,
                              air_quality_data_id INTEGER REFERENCES AirQualityData(id) ON DELETE CASCADE,
@@ -18,7 +16,6 @@ CREATE TABLE Attribution (
                              name VARCHAR(255)
 );
 
--- 创建 City 和 CityGeo 表
 CREATE TABLE City (
                       id SERIAL PRIMARY KEY,
                       air_quality_data_id INTEGER REFERENCES AirQualityData(id) ON DELETE CASCADE,
@@ -34,7 +31,6 @@ CREATE TABLE CityGeo (
                          longitude DOUBLE PRECISION
 );
 
--- 创建 Iaqi 表
 CREATE TABLE Iaqi (
                       id SERIAL PRIMARY KEY,
                       air_quality_data_id INTEGER REFERENCES AirQualityData(id) ON DELETE CASCADE,
@@ -50,7 +46,6 @@ CREATE TABLE Iaqi (
                       w DOUBLE PRECISION
 );
 
--- 创建 Forecast 和 ForecastData 表
 CREATE TABLE Forecast (
                           id SERIAL PRIMARY KEY,
                           air_quality_data_id INTEGER REFERENCES AirQualityData(id) ON DELETE CASCADE
@@ -66,14 +61,12 @@ CREATE TABLE ForecastData (
                               min INTEGER
 );
 
--- 创建 Debug 表
 CREATE TABLE Debug (
                        id SERIAL PRIMARY KEY,
                        air_quality_data_id INTEGER REFERENCES AirQualityData(id) ON DELETE CASCADE,
                        sync TIMESTAMP
 );
 
--- 创建 TimeData 表
 CREATE TABLE TimeData (
                           id SERIAL PRIMARY KEY,
                           air_quality_data_id INTEGER REFERENCES AirQualityData(id) ON DELETE CASCADE,

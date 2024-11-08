@@ -1,6 +1,5 @@
 package org.tcd.cs7ns4.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -17,12 +16,10 @@ import java.util.Optional;
 @Service
 public class AirQualityService {
 
-//    @Autowired
     private final AirQualityRepository repository;
     private final String token;
     private final List<String> cities;
 
-    // 使用构造器注入的方式读取配置文件中的值
     public AirQualityService(AirQualityRepository repository,
                              @Value("${airquality.api.token}") String token,
                              @Value("${airquality.api.cities}") String cities) {
@@ -35,7 +32,6 @@ public class AirQualityService {
         RestTemplate restTemplate = new RestTemplate();
         for (String city : cities) {
             String formattedCity = city.replace("_", "");
-            System.out.println("fuck "+formattedCity);
             String url = "https://api.waqi.info/feed/" + formattedCity + "/?token=" + token;
             AirQualityResponse response = restTemplate.getForObject(url, AirQualityResponse.class);
 
