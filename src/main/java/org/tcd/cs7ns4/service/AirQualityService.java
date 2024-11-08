@@ -8,6 +8,7 @@ import org.tcd.cs7ns4.entity.AirQualityData;
 import org.tcd.cs7ns4.repository.AirQualityRepository;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,7 +34,10 @@ public class AirQualityService {
                 data.setDominantPollutant(response.getData().getDominentpol());
                 data.setTemperature(response.getData().getIaqi().getT().getV());
                 data.setHumidity(response.getData().getIaqi().getH().getV());
-                data.setTimestamp(LocalDateTime.parse(response.getData().getTime().getIso()));
+
+                OffsetDateTime offsetDateTime = OffsetDateTime.parse(response.getData().getTime().getIso());
+                LocalDateTime localTimestamp = offsetDateTime.toLocalDateTime();
+                data.setTimestamp(localTimestamp);
 
                 repository.save(data);
             }
