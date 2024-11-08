@@ -13,7 +13,7 @@ public class ScheduledTasks {
         this.airQualityService = airQualityService;
     }
 
-    @Scheduled(fixedRate = 3600000)  // 每小时请求一次
+    @Scheduled(fixedRate = 36)  // 每小时请求一次
     public void fetchData() {
         airQualityService.fetchDataAndSave();
     }
