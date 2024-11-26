@@ -16,6 +16,11 @@ public class AirQualityController {
 
     @GetMapping("/{city}")
     public List<AirQualityData> getDataByCity(@PathVariable String city) {
-        return repository.findByCity(city);
+        try {
+            return repository.findByCity(city);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch air quality data for city: " + city);
+        }
     }
 }
