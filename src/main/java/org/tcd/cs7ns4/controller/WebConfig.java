@@ -9,10 +9,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**") // Allow all endpoints under /api
-                .allowedOriginPatterns("*") // Allow all origins dynamically
+        registry.addMapping("/api/**")
+                .allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE")
                 .allowedHeaders("*")
-                .allowCredentials(true); // Allow cookies/credentials
+                .allowCredentials(true);
     }
 }
